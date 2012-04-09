@@ -1,0 +1,248 @@
+<!-- 
+   Copyright (c) 2012 Stefan Ferstl
+   
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+   
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+ -->
+ 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <!-- ### Project information ### -->
+  <groupId>ch.sferstl.maven</groupId>
+  <artifactId>maven-assembler</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  
+  
+  <!-- ### Project properties ### -->
+  <properties>
+    <!-- Plugin versions -->
+    <maven-assembly-plugin.version>2.3</maven-assembly-plugin.version>
+    <maven-dependency-plugin.version>2.4</maven-dependency-plugin.version>
+    <maven-enforcer-plugin.version>1.0.1</maven-enforcer-plugin.version>
+    <wagon-maven-plugin.version>1.0-beta-3</wagon-maven-plugin.version>
+    
+    <!-- The maven version will be enforced in the initialize phase of the build -->
+    <original.maven.version>${mavenVersion}</original.maven.version>
+    <original.maven.targetdir>original-maven</original.maven.targetdir>
+    <settings.targetdir>settings</settings.targetdir>
+    <settings.filename>settings.xml</settings.filename>
+    <!-- Default output format. Override it with -Dformat -->
+    <assembly.output.format>tar.gz</assembly.output.format>
+    <!-- Default assembly name. Override it with -DfinalName -->
+    <assembly.final.name>apache-maven-${original.maven.version}-bin</assembly.final.name>
+  </properties>
+  
+  
+  <!-- ### Profiles for build customizations ### -->
+  <profiles>
+    <!-- Create the assembly in a different format -->
+    <profile>
+      <id>format</id>
+      <activation>
+        <property>
+          <name>format</name>
+        </property>
+      </activation>
+      <properties>
+        <assembly.output.format>${format}</assembly.output.format>
+      </properties>
+    </profile>
+    
+    <!-- Use a different assembly name -->
+    <profile>
+      <id>final-name</id>
+      <activation>
+        <property>
+          <name>finalName</name>
+        </property>
+      </activation>
+      <properties>
+        <assembly.final.name>${finalName}</assembly.final.name>
+      </properties>
+    </profile>
+    
+    <!-- Use a different settings file name -->
+    <profile>
+      <id>settings-filename</id>
+      <activation>
+        <property>
+          <name>settingsFileName</name>
+        </property>
+      </activation>
+      <properties>
+        <settings.filename>${settingsFileName}</settings.filename>
+      </properties>
+    </profile>
+  </profiles>
+  
+  
+  <!-- ### Build configuration ### -->
+  <build>
+    <!-- Include the assembly descriptor in the resources -->
+    <resources>
+      <resource>
+        <directory>src/main/assembly</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+
+    <!-- Make m2eclipse happy -->    
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                     <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-dependency-plugin</artifactId>
+                     <versionRange>[${maven-dependency-plugin.version}]</versionRange>
+                     <goals>
+                       <goal>unpack</goal>
+                     </goals>
+                     </pluginExecutionFilter>
+                     <action>
+                       <ignore />
+                     </action>
+                  </pluginExecution>
+                </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+       </plugin>
+     </plugins>
+   </pluginManagement>
+    
+    <!-- Plugins to build the maven distro -->
+    <plugins>
+      <!-- Enforce the required properties -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven-enforcer-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireProperty>
+                  <property>mavenVersion</property>
+                  <message>You need to define a maven version (-DmavenVersion)</message>
+                </requireProperty>
+                <requireProperty>
+                  <property>settingsUrl</property>
+                  <message>You need to define a URL to the settings.xml to use in your distro (-DsettingsUrl)</message>
+                </requireProperty>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Unpack the original maven distro -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${maven-dependency-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>apache-maven</artifactId>
+                  <version>${original.maven.version}</version>
+                  <classifier>bin</classifier>
+                  <type>tar.gz</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/${original.maven.targetdir}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Get the settings.xml -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>wagon-maven-plugin</artifactId>
+        <version>${wagon-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>download-single</goal>
+            </goals>
+            <configuration>
+              <url>${settingsUrl}</url>
+              <fromFile>${settings.filename}</fromFile>
+              <toFile>${project.build.directory}/${settings.targetdir}/settings.xml</toFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Assemble the customized maven distro -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven-assembly-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/assembly.xml</descriptor>
+              </descriptors>
+              <finalName>${assembly.final.name}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  
+  
+  <!-- ### Distribution management ### -->
+  <distributionManagement>
+    <repository>
+      <id>releases</id>
+      <url>${distribution.release.url}</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshots</id>
+      <url>${distribution.snapshot.url}</url>
+    </snapshotRepository>
+  </distributionManagement>
+  
+</project>
