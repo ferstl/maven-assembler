@@ -3,17 +3,18 @@ The Maven Assembler is a simple maven assembly that allows you to create your ow
 
 What's the difference to the original maven distribution at
 [maven.apache.org](http://maven.apache.org)?
-*   It contains your customized `settings.xml` that fits to your build environment
-*   More restrictive file permissions, i.e. no world-writable directories
-*   more package formats besides zip and tar.gz (any format that the `maven-assembly-plugin supports`)
+- It contains your customized `settings.xml` that fits to your build environment
+- More restrictive file permissions, i.e. no world-writable directories
+- more package formats besides zip and tar.gz (any format that the `maven-assembly-plugin supports`)
 
 ## How to use it
 These commands will create a maven distribution as `tar.gz` with your own `settings.xml`
-        # Provide the maven version and the location of the settings.xml you want to use
-        mvn package -DmavenVersion=3.0.4 -DsettingsUrl=/Users/me/maven-config/settings.xml
+
+     # Provide the maven version and the location of the settings.xml you want to use
+     mvn package -DmavenVersion=3.0.4 -DsettingsUrl=/Users/me/maven-config/settings.xml
         
-        # The url to the settings.xml can also be a remote location
-        mvn package -DmavenVersion=3.0.4 -DsettingsUrl=http://svn.example.com/svn/settings.xml
+     # The url to the settings.xml can also be a remote location
+     mvn package -DmavenVersion=3.0.4 -DsettingsUrl=http://svn.example.com/svn/settings.xml
 
 These are all properties that you can use:
 
