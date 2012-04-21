@@ -259,11 +259,11 @@
   <!-- ### Distribution management ### -->
   <distributionManagement>
     <repository>
-      <id>releases</id>
+      <id>nexus</id>
       <url>${distribution.release.url}</url>
     </repository>
     <snapshotRepository>
-      <id>snapshots</id>
+      <id>nexus</id>
       <url>${distribution.snapshot.url}</url>
     </snapshotRepository>
   </distributionManagement>
