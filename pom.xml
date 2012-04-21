@@ -42,10 +42,13 @@
     <maven-release-plugin.version>2.2.2</maven-release-plugin.version>
     <wagon-maven-plugin.version>1.0-beta-3</wagon-maven-plugin.version>
     
+    <skip.assembler>false</skip.assembler>
     <!-- The maven version will be enforced in the initialize phase of the build -->
     <original.maven.version>${mavenVersion}</original.maven.version>
     <original.maven.targetdir>original-maven</original.maven.targetdir>
     <settings.targetdir>settings</settings.targetdir>
+    <!-- Wagon needs an URL even if skip=true -->
+    <settings.url>file://</settings.url>
     <settings.filename>settings.xml</settings.filename>
     <!-- Default output format. Override it with -Dformat -->
     <assembly.output.format>tar.gz</assembly.output.format>
@@ -56,6 +59,20 @@
   
   <!-- ### Profiles for build customizations ### -->
   <profiles>
+    <!-- Skip creation of the maven distro
+         (useful for mvn deploy or mvn release:xxx) -->
+    <profile>
+      <id>skip</id>
+      <activation>
+        <property>
+          <name>skip</name>
+        </property>
+      </activation>
+      <properties>
+        <skip.assembler>true</skip.assembler>
+      </properties>
+    </profile>
+    
     <!-- Create the assembly in a different format -->
     <profile>
       <id>format</id>
@@ -79,6 +96,19 @@
       </activation>
       <properties>
         <assembly.final.name>${finalName}</assembly.final.name>
+      </properties>
+    </profile>
+    
+    <!-- Settings URL -->
+    <profile>
+      <id>settings-url</id>
+      <activation>
+        <property>
+          <name>settingsUrl</name>
+        </property>
+      </activation>
+      <properties>
+        <settings.url>${settingsUrl}</settings.url>
       </properties>
     </profile>
     
@@ -189,6 +219,7 @@
               <goal>enforce</goal>
             </goals>
             <configuration>
+              <skip>${skip.assembler}</skip>
               <rules>
                 <requireProperty>
                   <property>mavenVersion</property>
@@ -215,6 +246,7 @@
               <goal>unpack</goal>
             </goals>
             <configuration>
+              <skip>${skip.assembler}</skip>
               <artifactItems>
                 <artifactItem>
                   <groupId>org.apache.maven</groupId>
@@ -241,7 +273,8 @@
               <goal>download-single</goal>
             </goals>
             <configuration>
-              <url>${settingsUrl}</url>
+              <skip>${skip.assembler}</skip>
+              <url>${settings.url}</url>
               <fromFile>${settings.filename}</fromFile>
               <toFile>${project.build.directory}/${settings.targetdir}/settings.xml</toFile>
             </configuration>
@@ -260,6 +293,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
+              <skipAssembly>${skip.assembler}</skipAssembly>
               <attach>false</attach>
               <descriptors>
                 <descriptor>src/main/assembly/assembly.xml</descriptor>

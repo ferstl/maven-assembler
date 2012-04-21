@@ -33,3 +33,4 @@ These are all properties to run the Maven Assembler:
 | `settingsFileName` | no | `settings.xml` | Use this property if your maven settings file has another name than `settings.xml` |
 | `format` | no | `tar.gz`| The package format of your maven distro |
 | `finalName` | no | `apache-maven-<mavenVersion>-bin`| The final name of your maven distro |
+| `skip` | no | `false`| Skip creation of the maven distro. Useful for `mvn deploy` or `mvn release:xxx` |
