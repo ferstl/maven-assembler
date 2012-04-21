@@ -16,8 +16,7 @@ These commands will create a maven distribution as `tar.gz` package:
     # The url can also be a remote location (protocol needs to be supported by the wagon-maven-plugin)
     mvn package -DmavenVersion=3.0.4 -DsettingsUrl=http://svn.example.com/svn/my-repo
     
-    # Use the settingsFileName property in case your maven settings are stored in a file that is
-    # not called settings.xml
+    # Use the settingsFileName property in case your maven settings are stored in a file that is not called settings.xml
     mvn package -DmavenVersion=3.0.4 -DsettingsUrl=http://svn.example.com/svn/my-repo -DsettingsFileName=my-settings.xml
 
 These are all properties that you can use:
