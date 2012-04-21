@@ -243,6 +243,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
+              <attach>false</attach>
               <descriptors>
                 <descriptor>src/main/assembly/assembly.xml</descriptor>
               </descriptors>
